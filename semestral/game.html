@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Domino Dash - Game</title>
+  <link rel="stylesheet" href="style.css/style.css" />
+  <link rel="stylesheet" href="style.css/game.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">🎲 Domino Dash</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="rules.html">Rules</a>
+      <a class="btn login" href="#">Logout</a>
+    </nav>
+  </header>
+
+  <main class="game-container">
+    <div class="game-info">
+      <p><strong>Jugador:</strong> Jaime Rojas</p>
+      <p><strong>Saldo:</strong> $<span id="balance">50</span></p>
+      <button class="btn bet" id="placeBet">Apostar $5</button>
+    </div>
+
+    <section class="table-area">
+      <h2>Mesa de Juego</h2>
+      <div id="domino-board">
+        <!-- Aquí se mostrarán las fichas jugadas -->
+      </div>
+    </section>
+
+    <section class="player-hand">
+      <h3>Tus Fichas</h3>
+      <div id="player-tiles">
+        <!-- Aquí van las fichas del jugador -->
+      </div>
+      <div class="controls">
+        <button class="btn play" id="playBtn">Jugar</button>
+        <button class="btn pass" id="passBtn">Pasar</button>
+      </div>
+    </section>
+
+    <section class="bot-area">
+      <h3>Jugadores Bot</h3>
+      <p>Bot 1 🤖 | Bot 2 🤖 | Bot 3 🤖</p>
+      <p id="game-status">Esperando tu jugada...</p>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
