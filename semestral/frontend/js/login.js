@@ -1,222 +1,159 @@
-// Ejemplo de conexión al backend
-const API_URL = 'http://localhost:3000/api'; // Ajusta el puerto
+(() => {
+    const App = (() => {
+        const htmlElements = {
+            loginToggle: document.querySelector("#loginToggle"),
+            signupToggle: document.querySelector("#signupToggle"),
+            loginDiv: document.querySelector("#loginForm"),
+            signupDiv: document.querySelector("#signupForm"),
+            loginForm: document.querySelector("#loginFormElement"),
+            signupForm: document.querySelector("#signupFormElement"),
+            msgError: document.querySelector("#errorMessage"),
+            msgSuccess: document.querySelector("#successMessage"),
+        }
 
-async function loginUser(email, password) {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-  return await response.json();
-}
-    
-class AuthManager {
-  constructor() {
-    this.initEventListeners();
-    this.checkAuthStatus();
-  }
+        const methods = {
+            showLogin: () => {
+                htmlElements.loginToggle.classList.add('active');
+                htmlElements.signupToggle.classList.remove('active');
+                htmlElements.loginDiv.classList.add('active');
+                htmlElements.signupDiv.classList.remove('active');
+            },
+            showSignup: () => {
+                methods.SuccessMsg(0);
+                htmlElements.loginToggle.classList.remove('active');
+                htmlElements.signupToggle.classList.add('active');
+                htmlElements.loginDiv.classList.remove('active');
+                htmlElements.signupDiv.classList.add('active');
+            },
+            
+            signUp: async (name, email, password, password2) => {
+                try{
+                    const response = await fetch('http://localhost:3000/api/v1/login/' + email);
+                    const data = await response.json();
 
-  initEventListeners() {
-    // Toggle between login and signup
-    document.getElementById('loginToggle').addEventListener('click', () => this.showLogin());
-    document.getElementById('signupToggle').addEventListener('click', () => this.showSignup());
-    
-    // Form submissions
-    document.getElementById('loginFormElement').addEventListener('submit', (e) => this.handleLogin(e));
-    document.getElementById('signupFormElement').addEventListener('submit', (e) => this.handleSignup(e));
-  }
+                    if (data.status || password !== password2){
+                        methods.ErrorMsg(1);
+                        methods.clean(htmlElements.msgError);
+                        methods.print(htmlElements.msgError, `<p>Verifica las contaseñas o email</p>`);
+                    }
+                    else{
+                        const formData = {name, email, password};
+                        methods.ErrorMsg(0);
+                        const response = await fetch('http://localhost:3000/api/v1/signup', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(formData),
+                        });
 
-  showLogin() {
-    document.getElementById('loginToggle').classList.add('active');
-    document.getElementById('signupToggle').classList.remove('active');
-    document.getElementById('loginForm').classList.add('active');
-    document.getElementById('signupForm').classList.remove('active');
-    this.clearMessages();
-  }
+                        const {msg} = await response.json();
+                        methods.SuccessMsg(1);
+                        methods.clean(htmlElements.msgSuccess);
+                        methods.print(htmlElements.msgSuccess, `<p>${msg}</p>`);
+                        htmlElements.signupForm.reset();
+                        methods.showLogin();
+                    }
+                }catch (err){
+                    console.error('Error:',err);
+                }
+            },
+            logIn: async (email, password) => {
+                try{
+                    const response = await fetch('http://localhost:3000/api/v1/login/' + email);
+                    const data = await response.json();
 
-  showSignup() {
-    document.getElementById('loginToggle').classList.remove('active');
-    document.getElementById('signupToggle').classList.add('active');
-    document.getElementById('loginForm').classList.remove('active');
-    document.getElementById('signupForm').classList.add('active');
-    this.clearMessages();
-  }
+                    if (data.status){
+                        const {status, user} = data;
+                        if(user.password !== password){
+                            methods.SuccessMsg(0);
+                            methods.ErrorMsg(1);
+                            methods.clean(htmlElements.msgError);
+                            methods.print(htmlElements.msgError, `<p>Email o contraseña incorrecta</p>`);
+                        }
+                        else{
+                            window.location.href = "index.html";
+                            //Se debe iniciar una variable se sesion
+                        }
+                    
+                    }
+                    else{
+                        const {status, msg} = data;
+                        methods.clean(htmlElements.msgError);
+                        methods.print(htmlElements.msgError, `<p>${msg}</p>`)
+                    }
+                }catch (err){
+                    console.error('Error:',err);
+                }
 
-  async handleLogin(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const loginData = {
-      email: formData.get('email'),
-      password: formData.get('password')
-    };
+                
+            },
+            hashPass: (pass) => {
+                let hash = 0;
+                for(let i = 0; i < pass.length; i++){
+                    let chr = pass.charCodeAt(i);
+                    hash = (hash << 5) - hash + chr;
+                    hash |= 0;
+                }
+                return hash;
+            },
+            ErrorMsg: (n) => {
+                if(n === 1){
+                    htmlElements.msgError.style.display = "block";
+                }
+                else{
+                    htmlElements.msgError.style.display = "none";
+                }  
+            },
+            SuccessMsg: (n) => {
+                if( n === 1){
+                    htmlElements.msgSuccess.style.display = "block";
+                }
+                else{
+                    htmlElements.msgSuccess.style.display = "none";
+                } 
+            },
+            clean: (element) => {
+                element.innerHTML = "";
+            },
+            print: (element, text) => {
+                element.innerHTML += `${text}`;
+            },
+        }
 
-    try {
-      this.showLoading(true);
-      const response = await this.apiRequest('/auth/login', 'POST', loginData);
-      
-      if (response.success) {
-        this.showSuccess('¡Inicio de sesión exitoso!');
-        this.saveAuthData(response.data);
-        setTimeout(() => {
-          window.location.href = 'game.html';
-        }, 1500);
-      } else {
-        this.showError(response.message || 'Error al iniciar sesión');
-      }
-    } catch (error) {
-      this.showError('Error de conexión. Verifica tu internet.');
-      console.error('Login error:', error);
-    } finally {
-      this.showLoading(false);
-    }
-  }
+        const handlers = {
+            loadLogin: () => {
+                methods.showLogin();
+            },
+            loadSignup: () => {
+                methods.showSignup();
+                
+            },
+            signupFormSubmit: (e) => {
+                e.preventDefault();
+                const name = htmlElements.signupForm.signupName.value;
+                const email = htmlElements.signupForm.signupEmail.value;
+                const password = htmlElements.signupForm.signupPassword.value;
+                const password2 = htmlElements.signupForm.confirmPassword.value;
+                methods.signUp(name, email, password, password2);
+            },
+            loginFormSubmit: (e) => {
+                e.preventDefault();
+                const email = htmlElements.loginForm.loginEmail.value;
+                const password = htmlElements.loginForm.loginPassword.value;
+                methods.logIn(email, password);
+            }
+        };
 
-  async handleSignup(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const signupData = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      password: formData.get('password'),
-      confirmPassword: formData.get('confirmPassword')
-    };
+        return {
+            init: () => {
+                htmlElements.signupForm.addEventListener('submit',handlers.signupFormSubmit);
+                htmlElements.loginForm.addEventListener('submit',handlers.loginFormSubmit);
+                htmlElements.loginToggle.addEventListener('click',handlers.loadLogin);
+                htmlElements.signupToggle.addEventListener('click',handlers.loadSignup);
 
-    // Validate password confirmation
-    if (signupData.password !== signupData.confirmPassword) {
-      this.showError('Las contraseñas no coinciden');
-      return;
-    }
-
-    try {
-      this.showLoading(true);
-      const response = await this.apiRequest('/auth/register', 'POST', signupData);
-      
-      if (response.success) {
-        this.showSuccess('¡Registro exitoso! Ahora puedes iniciar sesión.');
-        setTimeout(() => {
-          this.showLogin();
-        }, 2000);
-      } else {
-        this.showError(response.message || 'Error al registrar usuario');
-      }
-    } catch (error) {
-      this.showError('Error de conexión. Verifica tu internet.');
-      console.error('Signup error:', error);
-    } finally {
-      this.showLoading(false);
-    }
-  }
-
-  async apiRequest(endpoint, method = 'GET', data = null) {
-    const config = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    };
-
-    if (data) {
-      config.body = JSON.stringify(data);
-    }
-
-    // Add auth token if available
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    return await response.json();
-  }
-
-  saveAuthData(data) {
-    localStorage.setItem('authToken', data.token);
-    localStorage.setItem('userId', data.user.id);
-    localStorage.setItem('userName', data.user.name);
-    localStorage.setItem('userEmail', data.user.email);
-    localStorage.setItem('userBalance', data.user.balance || 50);
-  }
-
-  checkAuthStatus() {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      // Verify token is still valid
-      this.apiRequest('/auth/verify')
-        .then(response => {
-          if (response.success) {
-            // User is logged in, redirect to game
-            window.location.href = 'game.html';
-          } else {
-            // Token expired, clear storage
-            this.clearAuthData();
-          }
-        })
-        .catch(() => {
-          this.clearAuthData();
-        });
-    }
-  }
-
-  clearAuthData() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userBalance');
-  }
-
-  showLoading(show) {
-    const loading = document.getElementById('loading');
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
-    
-    if (show) {
-      loading.style.display = 'block';
-      loginBtn.disabled = true;
-      signupBtn.disabled = true;
-    } else {
-      loading.style.display = 'none';
-      loginBtn.disabled = false;
-      signupBtn.disabled = false;
-    }
-  }
-
-  showError(message) {
-    const errorDiv = document.getElementById('errorMessage');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-    document.getElementById('successMessage').style.display = 'none';
-  }
-
-  showSuccess(message) {
-    const successDiv = document.getElementById('successMessage');
-    successDiv.textContent = message;
-    successDiv.style.display = 'block';
-    document.getElementById('errorMessage').style.display = 'none';
-  }
-
-  clearMessages() {
-    document.getElementById('errorMessage').style.display = 'none';
-    document.getElementById('successMessage').style.display = 'none';
-  }
-}
-
-// Social login functions (placeholder - implement with actual providers)
-function loginWithGoogle() {
-  alert('Integración con Google próximamente disponible');
-}
-
-function loginWithFacebook() {
-  alert('Integración con Facebook próximamente disponible');
-}
-
-function showForgotPassword() {
-  const email = prompt('Ingresa tu email para recuperar la contraseña:');
-  if (email) {
-    // Simulate password reset
-    alert('Se ha enviado un enlace de recuperación a tu email (simulado)');
-  }
-}
-
-// Initialize auth manager
-const authManager = new AuthManager();
+            }
+        }
+    })();
+    App.init();
+})();
