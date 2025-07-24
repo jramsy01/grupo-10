@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectDB } from './config/database.js';
 import { config } from './config/config.js';
+import authRoutes from './routes/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fastify = Fastify({ 
@@ -19,7 +20,7 @@ await fastify.register(import('@fastify/cors'), {
 await connectDB();
 
 // Registro de rutas
-fastify.register(import('./routes/auth'), { prefix: '/api/auth' });
+fastify.register(authRoutes, { prefix: '/api/auth' });
 
 // Ruta de salud
 fastify.get('/health', async () => {

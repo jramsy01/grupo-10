@@ -1,21 +1,19 @@
-﻿# Usa la imagen oficial de Node.js
-FROM node:18-alpine
+﻿FROM node:18
 
-# Establece el directorio de trabajo
+# Crear el directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos de configuración
-COPY package.json pnpm-lock.yaml ./
+# Copiar los archivos package*
+COPY package*.json ./
 
-# Instala las dependencias
-RUN npm install -g pnpm
-RUN pnpm install
+# Instalar dependencias
+RUN npm install
 
-# Copia el resto de los archivos
+# Copiar el resto del código
 COPY . .
 
-# Expone el puerto
+# Exponer puerto si es necesario
 EXPOSE 3000
 
-# Comando para iniciar la aplicación
-CMD ["pnpm", "run", "dev"]
+# Comando para desarrollo
+CMD ["npm", "run", "dev"]
