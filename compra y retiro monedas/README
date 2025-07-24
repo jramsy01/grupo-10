@@ -1,0 +1,73 @@
+Base de Datos:
+
+Tablas Necesarias: Diseñar las tablas para:
+
+Usuarios: Donde se almacenará de forma segura el balance real de monedas de cada usuario.
+
+Transacciones/Retiros: Para registrar cada intento de retiro, su monto, la pasarela de pago usada, la fecha, y lo más importante, su estado (pendiente, en proceso, completado, fallido).
+
+2. Integrar Stripe (Lado del Servidor)
+¡Muy importante! La integración con Stripe se hace desde el backend para proteger nuestras claves secretas y la integridad de las transacciones.
+
+Instalar la Librería Oficial de Stripe: Descarguen e integren la librería de Stripe para el lenguaje de backend elegido.
+
+Obtener Claves API: Necesitaremos nuestras claves secretas de Stripe (ej., sk_live_XXXXX). Nunca, bajo ninguna circunstancia, se deben incluir estas claves en el código del frontend. Deben ser manejadas como variables de entorno seguras en el servidor.
+
+Crear un Endpoint de Retiro (/api/retiro):
+
+Este será el punto al que nuestro frontend enviará las solicitudes de retiro.
+
+Validación de Credenciales: En este endpoint, debemos verificar la contraseña del usuario (la que ingresa en el modal) contra la almacenada en nuestra base de datos.
+
+Verificar Monedas: Consultar la base de datos para asegurar que el usuario tiene suficientes monedas para el retiro solicitado.
+
+Iniciar Pago/Payout con Stripe: Utilizar la librería de Stripe para realizar un "payout" o "transferencia" a la cuenta del usuario (generalmente a través de su email de Stripe). Esto puede requerir configurar Stripe Connect si estamos transfiriendo a cuentas de usuarios.
+
+Actualizar Balance y Estado: Si la llamada a Stripe es exitosa, deducir las monedas del usuario en nuestra base de datos y registrar la transacción con un estado de pendiente o en proceso.
+
+Configurar Webhooks de Stripe:
+
+Crear un endpoint específico para webhooks en nuestro backend (ej., /stripe-webhook).
+
+Configurar este endpoint en el panel de Stripe.
+
+Stripe enviará notificaciones a este endpoint cuando el estado de un pago/payout cambie (ej., payout.succeeded, payout.failed).
+
+Nuestro backend debe escuchar estas notificaciones y actualizar el estado de la transacción en nuestra base de datos, asegurando la coherencia entre Stripe y nuestro sistema.
+
+3. Integrar PagueloFacil (Lado del Servidor)
+La integración con PagueloFacil también se realizará desde el backend.
+
+Consultar Documentación API de PagueloFacil: Investiguen la documentación oficial de PagueloFacil para entender cómo iniciar transferencias bancarias o pagos programáticos desde el servidor.
+
+Obtener Credenciales: Necesitaremos las credenciales de API que PagueloFacil nos proporcione, manejándolas de forma segura en el backend (nunca en el frontend).
+
+Modificar el Endpoint de Retiro: Dentro de nuestro endpoint /api/withdrawals, si el usuario selecciona PagueloFacil:
+
+Validar Datos Bancarios: Asegurar que el número de cuenta y el banco sean válidos.
+
+Iniciar Transferencia: Usar la API de PagueloFacil para iniciar la transferencia bancaria al número de cuenta proporcionado por el usuario.
+
+Actualizar Balance y Estado: Deducir las monedas del usuario y registrar la transacción con un estado pendiente o en proceso.
+
+Manejo de Respuestas/Webhooks de PagueloFacil: Averigüen si PagueloFacil ofrece webhooks o algún mecanismo de notificación asíncrona para confirmar el éxito o fracaso de las transferencias. Si no hay webhooks, consideren un sistema de conciliación manual o por lotes.
+
+4. Actualizar el Frontend
+Una vez que el backend esté funcionando y listo para recibir solicitudes:
+
+Modificar script.js:
+
+Eliminar la lógica de simulación de userCoins y processWithdrawal.
+
+Actualizar la función updateUI() para que consulte el balance real del usuario desde un nuevo endpoint en el backend (ej., /api/user/balance).
+
+En la función processWithdrawal(), en lugar del setTimeout actual, realizar una petición HTTP (FETCH/AJAX) al endpoint de retiro de nuestro backend (/api/withdrawals), enviando el monto, el método de pago y los datos relevantes (email de Stripe, datos bancarios de PagueloFacil, y la contraseña del usuario).
+
+Manejar la respuesta del backend (éxito/error) y mostrar mensajes apropiados al usuario.
+
+Consideraciones Adicionales
+Seguridad: Implementar HTTPS en todo el sitio. Añadir validación robusta en el backend para prevenir inyecciones SQL, XSS, etc.
+
+Errores: Planificar el manejo de errores en cada etapa (fallo de validación, error de API de pasarela, error de base de datos) y comunicarlos claramente al usuario.
+
+Tiempos de Procesamiento: Informar al usuario que los retiros pueden tardar, especialmente las transferencias bancarias.
