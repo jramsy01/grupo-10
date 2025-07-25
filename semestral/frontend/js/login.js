@@ -26,18 +26,20 @@
                 htmlElements.signupDiv.classList.add('active');
             },
             
-            signUp: async (name, email, password, password2) => {
+            signUp: async (nombre_usuario, correo, password, password2) => {
                 try{
-                    const response = await fetch('http://localhost:3000/api/v1/login/' + email);
+                    const response = await fetch('http://localhost:3000/api/v1/login/' + correo);
                     const data = await response.json();
+                    console.log(data.mensaje);
 
-                    if (data.status || password !== password2){
+                    if (data.mensaje != "Correo no encontrado" || password !== password2){
                         methods.ErrorMsg(1);
                         methods.clean(htmlElements.msgError);
                         methods.print(htmlElements.msgError, `<p>Verifica las contaseñas o email</p>`);
                     }
                     else{
-                        const formData = {name, email, password};
+                        const contrasena = methods.hashPass(password);
+                        const formData = {nombre_usuario, correo, contrasena};
                         methods.ErrorMsg(0);
                         const response = await fetch('http://localhost:3000/api/v1/signup', {
                             method: 'POST',
@@ -47,10 +49,10 @@
                             body: JSON.stringify(formData),
                         });
 
-                        const {msg} = await response.json();
+                        const {mensaje} = await response.json();
                         methods.SuccessMsg(1);
                         methods.clean(htmlElements.msgSuccess);
-                        methods.print(htmlElements.msgSuccess, `<p>${msg}</p>`);
+                        methods.print(htmlElements.msgSuccess, `<p>${mensaje}</p>`);
                         htmlElements.signupForm.reset();
                         methods.showLogin();
                     }
@@ -62,30 +64,22 @@
                 try{
                     const response = await fetch('http://localhost:3000/api/v1/login/' + email);
                     const data = await response.json();
-
-                    if (data.status){
-                        const {status, user} = data;
-                        if(user.password !== password){
-                            methods.SuccessMsg(0);
-                            methods.ErrorMsg(1);
-                            methods.clean(htmlElements.msgError);
-                            methods.print(htmlElements.msgError, `<p>Email o contraseña incorrecta</p>`);
-                        }
-                        else{
-                            window.location.href = "index.html";
-                            //Se debe iniciar una variable se sesion
-                        }
                     
+                    if (data.correo !== email || data.contrasena !== methods.hashPass(password).toString()){
+                        methods.SuccessMsg(0);
+                        methods.ErrorMsg(1);
+                        methods.clean(htmlElements.msgError);
+                        methods.print(htmlElements.msgError, `<p>Email o contraseña incorrecta</p>`);
+                            
                     }
                     else{
-                        const {status, msg} = data;
-                        methods.clean(htmlElements.msgError);
-                        methods.print(htmlElements.msgError, `<p>${msg}</p>`)
+                        window.location.href = "index.html";
+                        //Se debe iniciar una variable se sesion
                     }
+
                 }catch (err){
                     console.error('Error:',err);
                 }
-
                 
             },
             hashPass: (pass) => {

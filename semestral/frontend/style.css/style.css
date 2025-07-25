@@ -35,12 +35,6 @@ body {
   }
   
   .login {
-    background-color: #2b1a13;
-    color: #fff;
-    border: 1px solid #fff;
-  }
-  
-  .signup {
     background-color: #f4c400;
     color: #000;
   }
