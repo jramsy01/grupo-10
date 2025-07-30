@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Menú Principal – Chess Game</title>
+  <!-- Enlaza tu CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="welcome">¡Bienvenido!</div>
+      <div class="user-info">
+        <div class="user-avatar">👤</div>
+        <div class="user-stats">
+          <div class="username" id="username">"Nombre de ususario"</div>
+          <div class="coins">💰 <span id="userCoins">1,250</span> monedas(Poner monedas reales)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-grid">
+      <!-- Jugar contra bots -->
+      <div class="menu-card" onclick="openBotDifficulty()">
+        <div class="menu-icon">🤖</div>
+        <div class="menu-title">Jugar contra bots</div>
+        <div class="menu-description">
+          Entrena y gana monedas jugando contra diferentes niveles de IA
+        </div>
+      </div>
+
+      <!-- Jugar contra amigo -->
+      <div class="menu-card" onclick="playWithFriend()">
+        <div class="menu-icon">🤝</div>
+        <div class="menu-title">Juega contra un amigo</div>
+        <div class="menu-description">
+          Invita a un amigo a jugar al ajedrez en tiempo real
+        </div>
+      </div>
+
+      <!-- Tienda de monedas -->
+      <div class="menu-card" onclick="openCoinStore()">
+        <div class="menu-icon">🪙</div>
+        <div class="menu-title">Comprar monedas</div>
+        <div class="menu-description">
+          Adquiere más monedas para desbloquear funciones premium y apostar
+        </div>
+      </div>
+
+      <!-- Retirar dinero -->
+      <div class="menu-card" onclick="openWithdrawal()">
+        <div class="menu-icon">💵</div>
+        <div class="menu-title">Retirar dinero</div>
+        <div class="menu-description">
+          Convierte tus monedas virtuales en dinero real
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <button class="action-btn buy-coins-btn" onclick="openCoinStore()">
+        💰 Comprar Monedas
+      </button>
+      <button class="action-btn withdraw-btn" onclick="openWithdrawal()">
+        💵 Retirar Dinero
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de dificultad de bots -->
+  <div class="modal" id="botDifficultyModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <h3>Selecciona la dificultad</h3>
+      <div class="difficulty-options">
+        <div class="difficulty-card easy" onclick="startBotGame('easy')">
+          <div class="difficulty-icon">😊</div>
+          <div class="difficulty-title">Fácil</div>
+          <div class="difficulty-description">
+            Perfecto para principiantes y práctica básica
+          </div>
+          <div class="reward-info">Juego gratuito</div>
+        </div>
+        <div class="difficulty-card medium" onclick="startBotGame('medium')">
+          <div class="difficulty-icon">🤔</div>
+          <div class="difficulty-title">Medio</div>
+          <div class="difficulty-description">
+            Desafío moderado para jugadores intermedios
+          </div>
+          <div class="reward-info">Juego gratuito</div>
+        </div>
+        <div class="difficulty-card hard" onclick="startBotGame('hard')">
+          <div class="difficulty-icon">😤</div>
+          <div class="difficulty-title">Difícil</div>
+          <div class="difficulty-description">
+            Máximo desafío para expertos
+          </div>
+          <div class="reward-info">
+            Cuesta: 5 monedas<br>Premio: 10 monedas
+          </div>
+        </div>
+      </div>
+      <div class="warning-cost" id="hardWarning">
+        ⚠️ En modo difícil se te cobrarán <strong>5 monedas</strong>. Si ganas,
+        recibirás <strong>10 monedas</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Tu script -->
+  <script src="js/menu.js" defer></script>
+</body>
+</html>
