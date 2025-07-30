@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compra tus Fichas</title>
+    <link rel="stylesheet" href="monedas.css">
+    <script src="monedas.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">compra tus fichas</h1>
+        
+        <div class="nav-buttons">
+            <a href="monedas.html" class="nav-btn">🪙 Comprar Fichas</a>
+            <a href="retiro.html" class="nav-btn active">💸 Retirar Dinero</a>
+        </div>
+        
+        <div class="packages-grid">
+            <!-- Paquete 200 monedas -->
+            <div class="package-card" onclick="selectPackage(200, 0.99)">
+                <div class="price">$0.99</div>
+                <div class="coin-icon">
+                    <div class="coin-stack">🪙</div>
+                </div>
+                <div class="amount">200</div>
+                <div class="currency">monedas</div>
+            </div>
+
+            <!-- Paquete 1,000 monedas -->
+            <div class="package-card" onclick="selectPackage(1000, 4.99)">
+                <div class="price">$4.99</div>
+                <div class="coin-icon">
+                    <div class="coin-stack">🪙</div>
+                </div>
+                <div class="amount">1,000</div>
+                <div class="currency">monedas</div>
+            </div>
+
+            <!-- Paquete 3,000 monedas -->
+            <div class="package-card" onclick="selectPackage(3000, 19.99)">
+                <div class="price">$19.99</div>
+                <div class="coin-icon">
+                    <div class="coin-stack">🪙</div>
+                </div>
+                <div class="amount">3,000</div>
+                <div class="currency">monedas</div>
+            </div>
+
+            <!-- Paquete 8,000 monedas -->
+            <div class="package-card" onclick="selectPackage(8000, 49.99)">
+                <div class="price">$49.99</div>
+                <div class="coin-icon">
+                    <div class="coin-stack">🪙</div>
+                </div>
+                <div class="amount">8,000</div>
+                <div class="currency">monedas</div>
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <div style="color: #00c851; font-weight: bold; font-size: 1.5rem;">PagueloFacil</div>
+            <div style="color: #635bff; font-weight: bold; font-size: 1.5rem;">stripe</div>
+        </div>
+    </div>
+
+    <!-- Modal de selección de pago -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3>Seleccionar método de pago</h3>
+            <p id="packageInfo"></p>
+            <div class="payment-buttons">
+                <button class="payment-btn stripe-btn" onclick="payWithStripe()">
+                    Pagar con Stripe
+                </button>
+                <button class="payment-btn paguelo-btn" onclick="payWithPagueloFacil()">
+                    Pagar con PagueloFacil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+</body>
+</html>

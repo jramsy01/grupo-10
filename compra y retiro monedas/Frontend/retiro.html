@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retirar Dinero Real</title>
+    <link rel="stylesheet" href="monedas.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">retirar dinero</h1>
+            <p class="subtitle">Convierte tus monedas virtuales en dinero real</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="monedas.html" class="nav-btn">🪙 Comprar Fichas</a>
+            <a href="retiro.html" class="nav-btn active">💸 Retirar Dinero</a>
+        </div>
+
+        <div class="balance-card">
+            <div class="balance-info">
+                <div class="balance-item">
+                    <div class="balance-label">Monedas Disponibles</div>
+                    <div class="balance-amount" id="userCoins">2,500</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">Valor en USD</div>
+                    <div class="balance-amount" id="usdValue">$12.50</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="conversion-rate">
+            <strong>💰 Tasa de conversión: 1,000 monedas = $5.00 USD</strong>
+            <br>
+            <small>Mínimo de retiro: $5.00 USD (1,000 monedas)</small>
+        </div>
+
+        <div class="withdrawal-options">
+            <div class="withdrawal-card" onclick="initiateWithdrawal(5, 1000)">
+                <div class="dollar-icon">💵</div>
+                <div class="withdrawal-amount">$5.00</div>
+                <div class="coins-required">Requiere: 1,000 monedas</div>
+                <button class="withdrawal-btn" id="btn-5">Retirar $5.00</button>
+            </div>
+
+            <div class="withdrawal-card" onclick="initiateWithdrawal(10, 2000)">
+                <div class="dollar-icon">💵</div>
+                <div class="withdrawal-amount">$10.00</div>
+                <div class="coins-required">Requiere: 2,000 monedas</div>
+                <button class="withdrawal-btn" id="btn-10">Retirar $10.00</button>
+            </div>
+
+            <div class="withdrawal-card disabled" onclick="initiateWithdrawal(25, 5000)">
+                <div class="dollar-icon">💵</div>
+                <div class="withdrawal-amount">$25.00</div>
+                <div class="coins-required">Requiere: 5,000 monedas</div>
+                <button class="withdrawal-btn" disabled id="btn-25">Monedas insuficientes</button>
+            </div>
+
+            <div class="withdrawal-card disabled" onclick="initiateWithdrawal(50, 10000)">
+                <div class="dollar-icon">💵</div>
+                <div class="withdrawal-amount">$50.00</div>
+                <div class="coins-required">Requiere: 10,000 monedas</div>
+                <button class="withdrawal-btn" disabled id="btn-50">Monedas insuficientes</button>
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <div style="color: #00c851; font-weight: bold; font-size: 1.5rem;">PagueloFacil</div>
+            <div style="color: #635bff; font-weight: bold; font-size: 1.5rem;">stripe</div>
+        </div>
+    </div>
+
+    <div class="modal" id="withdrawalModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3>Confirmar Retiro</h3>
+            <p><strong id="withdrawalAmount"></strong></p>
+            <p>Monedas a usar: <strong id="coinsToUse"></strong></p>
+
+            <div class="warning">
+                ⚠️ Los retiros pueden tardar de 1-3 días hábiles en procesarse según el método de pago seleccionado.
+            </div>
+
+            <form id="withdrawalForm">
+                <div class="form-group">
+                    <label>Método de pago:</label>
+                    <div class="payment-method-selection">
+                        <div class="payment-method-btn active" data-method="stripe" onclick="selectPaymentMethod('stripe')">
+                            Stripe
+                        </div>
+                        <div class="payment-method-btn" data-method="paguelo" onclick="selectPaymentMethod('paguelo')">
+                            PagueloFacil
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stripeFields">
+                    <div class="form-group">
+                        <label>Email de Stripe:</label>
+                        <input type="email" id="stripeEmail" placeholder="tu@email.com" required>
+                    </div>
+                </div>
+
+                <div id="pagueloFields" style="display: none;">
+                    <div class="form-group">
+                        <label>Número de cuenta:</label>
+                        <input type="text" id="accountNumber" placeholder="1234567890">
+                    </div>
+                    <div class="form-group">
+                        <label>Banco:</label>
+                        <select id="bankSelect">
+                            <option value="">Seleccionar banco</option>
+                            <option value="bac">BAC</option>
+                            <option value="banesco">Banesco</option>
+                            <option value="general">Banco General</option>
+                            <option value="nacional">Banco Nacional</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirma tu contraseña:</label>
+                    <input type="password" id="confirmPassword" placeholder="Tu contraseña" required>
+                </div>
+            </form>
+
+            <div style="margin-top: 30px;">
+                <button class="confirm-btn" onclick="processWithdrawal()">Confirmar Retiro</button>
+                <button class="cancel-btn" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
