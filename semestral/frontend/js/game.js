@@ -1,254 +1,148 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const board = document.getElementById("chess-board");
-    const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
-  
-    const initialPositions = {
-      a8: "♜", b8: "♞", c8: "♝", d8: "♛", e8: "♚", f8: "♝", g8: "♞", h8: "♜",
-      a7: "♟", b7: "♟", c7: "♟", d7: "♟", e7: "♟", f7: "♟", g7: "♟", h7: "♟",
-      a2: "♙", b2: "♙", c2: "♙", d2: "♙", e2: "♙", f2: "♙", g2: "♙", h2: "♙",
-      a1: "♖", b1: "♘", c1: "♗", d1: "♕", e1: "♔", f1: "♗", g1: "♘", h1: "♖"
-    };
-  
-    board.innerHTML = "";
-  
-    let selectedSquare = null;
-    let isWhiteTurn = true;
-  
-    for (let row = 8; row >= 1; row--) {
-      for (let col = 0; col < 8; col++) {
-        const square = document.createElement("div");
-        square.classList.add("square");
-        const isWhite = (row + col) % 2 === 0;
-        square.classList.add(isWhite ? "white" : "black");
-  
-        const position = letters[col] + row;
-        square.dataset.position = position;
-  
-        if (initialPositions[position]) {
-          square.textContent = initialPositions[position];
+(() => {
+    const App = (() => {
+        const htmlElements = {
+            btnLogout: document.querySelector(".logout"),
+            title: document.querySelector(".logo"),
+            openLoginBtn: document.querySelector("#openLogin"),
+            loginDialog: document.querySelector("#loginDialog"),
+            closeLogin: document.querySelector("#closeLogin"),
+            loginForm: document.querySelector("#loginForm"),
+            msgError: document.querySelector("#errorMessage"),
+            msgSuccess: document.querySelector("#successMessage"),
+            playerName: document.querySelector("#playerName"),
+            passBtn: document.querySelector("#passBtn"),
+            restartBtn: document.querySelector("#restartBtn"),
+            host: document.querySelector("#host"),
+            rival: document.querySelector("#rival"),
         }
-  
-        square.addEventListener("click", () => {
-          handleSquareClick(square);
-        });
-  
-        board.appendChild(square);
-      }
-    }
-  
-    function isPieceWhite(piece) {
-      if (!piece) return false;
-      return piece.charCodeAt(0) >= 9812;
-    }
-  
-    function clearHighlights() {
-      const squares = document.querySelectorAll(".square");
-      squares.forEach(sq => {
-        sq.classList.remove("highlight-move");
-        sq.style.outline = "none";
-      });
-    }
-  
-    function getPieceAt(pos) {
-      const sq = document.querySelector(`.square[data-position="${pos}"]`);
-      return sq ? sq.textContent : null;
-    }
-  
-    function getPossibleMoves(square) {
-      const pos = square.dataset.position;
-      const col = pos.charCodeAt(0);
-      const row = parseInt(pos[1]);
-      const piece = square.textContent;
-      const moves = [];
-  
-      const whitePawn = "♙";
-      const blackPawn = "♟";
-  
-      function isEmpty(position) {
-        return !getPieceAt(position);
-      }
-  
-      function isEnemy(position) {
-        const target = getPieceAt(position);
-        return target && isPieceWhite(target) !== isPieceWhite(piece);
-      }
-  
-      function isOnBoard(r, c) {
-        return r >= 1 && r <= 8 && c >= 97 && c <= 104;
-      }
-  
-      // Peones blanco
-      if (piece === whitePawn) {
-        const forward = row + 1;
-        const forwardPos = String.fromCharCode(col) + forward;
-        if (forward <= 8 && isEmpty(forwardPos)) {
-          moves.push(forwardPos);
-          if (row === 2) {
-            const doubleForwardPos = String.fromCharCode(col) + (row + 2);
-            if (isEmpty(doubleForwardPos)) moves.push(doubleForwardPos);
-          }
+
+        const methods = {
+            checkSession: () => {
+                if(sessionStorage.getItem("username") !== null){
+                    const title = htmlElements.title;
+                    const host = htmlElements.host;
+                    const username = sessionStorage.getItem("username");
+                    methods.clean(title);
+                    methods.print(title, `♜ Hashing Chess ♜ - ${username}`);
+                    methods.clean(host);
+                    methods.print(host, `Host: ${username}`);
+
+                    if(sessionStorage.getItem("username2") !== null){
+                        methods.clean(rival);
+                        methods.print(rival,`Rival: ${sessionStorage.getItem("username2")}`);
+                    }
+                }
+                else{
+                    window.location.href = 'index.html';
+                }
+            },
+            logIn: async (email, password) => {
+                try{
+                    if (email !== sessionStorage.getItem("email")){
+                        const response = await fetch('http://localhost:3000/api/v1/login/' + email);
+                        const data = await response.json();
+                    
+                        if (data.correo !== email || data.contrasena !== methods.hashPass(password).toString()){
+                            methods.SuccessMsg(0);
+                            methods.ErrorMsg(1);
+                            methods.clean(htmlElements.msgError);
+                            methods.print(htmlElements.msgError, `<p>Correo o contraseña incorrecta</p>`);
+                                
+                        }
+                        else{
+                            sessionStorage.setItem("username2", data.nombre_usuario);
+                            const rival = htmlElements.rival;
+                            methods.clean(rival);
+                            methods.print(rival,`Rival: ${sessionStorage.getItem("username2")}`);
+                            handlers.closeDialog();
+                        }
+                    }
+                    else{
+                        methods.SuccessMsg(0);
+                        methods.ErrorMsg(1);
+                        methods.clean(htmlElements.msgError);
+                        methods.print(htmlElements.msgError, `<p>El correo ya esta en uso</p>`);
+                    }
+                    
+
+                }catch (err){
+                    console.error('Error:',err);
+                }
+                
+            },
+            hashPass: (pass) => {
+                let hash = 0;
+                for(let i = 0; i < pass.length; i++){
+                    let chr = pass.charCodeAt(i);
+                    hash = (hash << 5) - hash + chr;
+                    hash |= 0;
+                }
+                return hash;
+            },
+            ErrorMsg: (n) => {
+                if(n === 1){
+                    htmlElements.msgError.style.display = "block";
+                }
+                else{
+                    htmlElements.msgError.style.display = "none";
+                }  
+            },
+            SuccessMsg: (n) => {
+                if( n === 1){
+                    htmlElements.msgSuccess.style.display = "block";
+                }
+                else{
+                    htmlElements.msgSuccess.style.display = "none";
+                } 
+            },
+            logOut: () => {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+                
+            },
+            clean: (element) => {
+                element.innerHTML = "";
+            },
+            print: (element, text) => {
+                element.innerHTML += `${text}`;
+            },
         }
-        const captures = [
-          String.fromCharCode(col - 1) + (row + 1),
-          String.fromCharCode(col + 1) + (row + 1),
-        ];
-        captures.forEach(p => {
-          if (isEnemy(p)) moves.push(p);
-        });
-      }
-  
-      // Peones negro
-      else if (piece === blackPawn) {
-        const forward = row - 1;
-        const forwardPos = String.fromCharCode(col) + forward;
-        if (forward >= 1 && isEmpty(forwardPos)) {
-          moves.push(forwardPos);
-          if (row === 7) {
-            const doubleForwardPos = String.fromCharCode(col) + (row - 2);
-            if (isEmpty(doubleForwardPos)) moves.push(doubleForwardPos);
-          }
-        }
-        const captures = [
-          String.fromCharCode(col - 1) + (row - 1),
-          String.fromCharCode(col + 1) + (row - 1),
-        ];
-        captures.forEach(p => {
-          if (isEnemy(p)) moves.push(p);
-        });
-      }
-  
-      // Torre
-      else if (piece === "♖" || piece === "♜") {
-        const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-        directions.forEach(([dr, dc]) => {
-          let r = row + dr, c = col + dc;
-          while (isOnBoard(r, c)) {
-            const p = String.fromCharCode(c) + r;
-            if (isEmpty(p)) {
-              moves.push(p);
-            } else {
-              if (isEnemy(p)) moves.push(p);
-              break;
+
+        const handlers = {
+            loadPage: () => {
+                methods.checkSession();
+            },
+            closeSession: () => {
+                methods.logOut();
+            },
+            openDialog: () => {
+                htmlElements.loginDialog.showModal();
+            },
+            closeDialog: () => {
+                htmlElements.loginDialog.close();
+            },
+            loginSubmit: (e) => {
+                e.preventDefault();
+                if (!loginForm.checkValidity()) {
+                    loginForm.reportValidity();
+                    return;
+                }
+                const email = htmlElements.loginForm.email.value;
+                const password = htmlElements.loginForm.password.value;
+                methods.logIn(email, password);
             }
-            r += dr;
-            c += dc;
-          }
-        });
-      }
-  
-      // Caballo
-      else if (piece === "♘" || piece === "♞") {
-        const offsets = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
-        offsets.forEach(([dr, dc]) => {
-          const r = row + dr, c = col + dc;
-          if (isOnBoard(r, c)) {
-            const p = String.fromCharCode(c) + r;
-            if (isEmpty(p) || isEnemy(p)) moves.push(p);
-          }
-        });
-      }
-  
-      // Alfil
-      else if (piece === "♗" || piece === "♝") {
-        const directions = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
-        directions.forEach(([dr, dc]) => {
-          let r = row + dr, c = col + dc;
-          while (isOnBoard(r, c)) {
-            const p = String.fromCharCode(c) + r;
-            if (isEmpty(p)) {
-              moves.push(p);
-            } else {
-              if (isEnemy(p)) moves.push(p);
-              break;
+            
+        };
+
+        return {
+            init: () => {
+                handlers.loadPage();
+                htmlElements.btnLogout.addEventListener('click',handlers.closeSession);
+                htmlElements.openLoginBtn.addEventListener('click',handlers.openDialog);
+                htmlElements.closeLogin.addEventListener('click',handlers.closeDialog);
+                htmlElements.loginForm.addEventListener('submit',handlers.loginSubmit);
             }
-            r += dr;
-            c += dc;
-          }
-        });
-      }
-  
-      // Dama
-      else if (piece === "♕" || piece === "♛") {
-        const directions = [
-          [1, 0], [-1, 0], [0, 1], [0, -1],
-          [1, 1], [1, -1], [-1, 1], [-1, -1]
-        ];
-        directions.forEach(([dr, dc]) => {
-          let r = row + dr, c = col + dc;
-          while (isOnBoard(r, c)) {
-            const p = String.fromCharCode(c) + r;
-            if (isEmpty(p)) {
-              moves.push(p);
-            } else {
-              if (isEnemy(p)) moves.push(p);
-              break;
-            }
-            r += dr;
-            c += dc;
-          }
-        });
-      }
-  
-      // Rey (sin enroque)
-      else if (piece === "♔" || piece === "♚") {
-        const directions = [
-          [1, 0], [-1, 0], [0, 1], [0, -1],
-          [1, 1], [1, -1], [-1, 1], [-1, -1]
-        ];
-        directions.forEach(([dr, dc]) => {
-          const r = row + dr, c = col + dc;
-          if (isOnBoard(r, c)) {
-            const p = String.fromCharCode(c) + r;
-            if (isEmpty(p) || isEnemy(p)) moves.push(p);
-          }
-        });
-      }
-  
-      return moves;
-    }
-  
-    function handleSquareClick(square) {
-      const piece = square.textContent;
-  
-      if (!selectedSquare) {
-        if (piece && isWhiteTurn === isPieceWhite(piece)) {
-          selectedSquare = square;
-          square.style.outline = "3px solid #00f";
-  
-          clearHighlights();
-          const moves = getPossibleMoves(square);
-          moves.forEach(pos => {
-            const sq = document.querySelector(`.square[data-position="${pos}"]`);
-            if (sq) sq.classList.add("highlight-move");
-          });
         }
-      } else {
-        if (square === selectedSquare) {
-          square.style.outline = "none";
-          selectedSquare = null;
-          clearHighlights();
-        } else {
-          if (!square.classList.contains("highlight-move")) return;
-  
-          square.textContent = selectedSquare.textContent;
-          selectedSquare.textContent = "";
-  
-          selectedSquare.style.outline = "none";
-          selectedSquare = null;
-          clearHighlights();
-  
-          isWhiteTurn = !isWhiteTurn;
-          document.getElementById("game-status").textContent = isWhiteTurn
-            ? "Turno de Blancas"
-            : "Turno de Negras";
-        }
-      }
-    }
-  
-    const loggedInUser = "Jaime Rojas";
-    const playerNameSpan = document.getElementById("playerName");
-    if (playerNameSpan) playerNameSpan.textContent = loggedInUser;
-  
-    document.getElementById("game-status").textContent = "Turno de Blancas";
-  });
-  
+    })();
+    App.init();
+})();

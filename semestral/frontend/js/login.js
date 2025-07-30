@@ -35,7 +35,7 @@
                     if (data.mensaje != "Correo no encontrado" || password !== password2){
                         methods.ErrorMsg(1);
                         methods.clean(htmlElements.msgError);
-                        methods.print(htmlElements.msgError, `<p>Verifica las contaseñas o email</p>`);
+                        methods.print(htmlElements.msgError, `<p>Verifica las contaseñas o correo</p>`);
                     }
                     else{
                         const contrasena = methods.hashPass(password);
@@ -69,12 +69,13 @@
                         methods.SuccessMsg(0);
                         methods.ErrorMsg(1);
                         methods.clean(htmlElements.msgError);
-                        methods.print(htmlElements.msgError, `<p>Email o contraseña incorrecta</p>`);
+                        methods.print(htmlElements.msgError, `<p>Correo o contraseña incorrecta</p>`);
                             
                     }
                     else{
+                        sessionStorage.setItem("username", data.nombre_usuario);
+                        sessionStorage.setItem("email", data.correo);
                         window.location.href = "index.html";
-                        //Se debe iniciar una variable se sesion
                     }
 
                 }catch (err){

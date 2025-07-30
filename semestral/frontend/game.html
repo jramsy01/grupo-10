@@ -3,54 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>♟️ Hashing Chest - Game ♛</title>
+  <title>♟️ Hashing Chess - Game ♛</title>
   <link rel="stylesheet" href="./style.css/style.css" />
   <link rel="stylesheet" href="./style.css/game.css" />
+  <script src="./js/game.js" defer></script>
 </head>
 <body>
   <header>
-    <div class="logo">♛ Hashing Chest ♜</div>
+    <div class="logo">♛ Hashing Chess ♜</div>
     <nav>
-      <a href="./index.html">🏠 Home</a>
-      <a href="./rules.html">📖 Rules</a>
-      <a class="btn login" href="#">🚪 Logout</a>
+      <a href="./index.html">🏠 Menú</a>
+      <a href="./rules.html">📖 Reglas</a>
+      <button class="btn login" id="openLogin">🔐 Iniciar Sesion</button>
+      <button class="btn logout" >🚪 Cerrar Sesión</button>
     </nav>
+    <dialog id="loginDialog">
+      <form id="loginForm" novalidate>
+          <div class="error-message" id="errorMessage"></div>
+          <div class="success-message" id="successMessage"></div>
+          <div class="form-group">
+            <h3>Iniciar Sesión Rival</h3>
+            <label for="loginEmail">Correo</label>
+            <input type="email" id="email" name="email" placeholder="tu@correo.com" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="auth-btn">Entrar</button>
+          <button type="button" class="auth-btn" id="closeLogin">Cancelar</button>
+        </form>
+    </dialog>
   </header>
 
   <main class="game-container">
     <div class="game-info">
       <!--seccion de jugador se actualiza segun el id de la ersona que alla ingresado-->
-      <p><strong>Jugador:</strong> <span id="playerName">Cargando...</span></p>
+      <p><strong>Rival:</strong> <span id="playerName"></span></p>
       <p><strong>Saldo:</strong> $<span id="balance">50</span></p>
       <button class="btn bet" id="placeBet">Apostar $5</button>
     </div>
 
     <section class="table-area">
       <h2>♟️ Tablero de Ajedrez</h2>
+      <p id="game-status">Esperando tu jugada...</p>
       <div id="chess-board">
 
         <!-- Aquí se mostrará el tablero o piezas jugadas -->
       </div>
+      <button class="btn pass" id="passBtn">Rendirse</button>
+      <button class="btn restart" id="restartBtn" style="display: none;">Jugar otra vez</button>
     </section>
 
     <section class="player-hand">
-      <h3>♙ Tus Piezas</h3>
-      <div id="player-tiles">
-        <!-- Aquí van las piezas del jugador -->
-      </div>
-      <div class="controls">
-        <button class="btn play" id="playBtn">Mover</button>
-        <button class="btn pass" id="passBtn">Rendirse</button>
-      </div>
-    </section>
+  <h3>♙ Fichas Capturadas</h3>
+  <div class="captured-container">
+    <div class="captured-section">
+      <h4 id="host"></h4>
+      <div id="capturedByPlayer1" class="captured-pieces"></div>
+    </div>
+    <div class="captured-section">
+      <h4 id="rival"></h4>
+      <div id="capturedByPlayer2" class="captured-pieces"></div>
+    </div>
+  </div>
+</section>
 
-    <section class="bot-area">
-      <h3>♘ Jugadores Bot</h3>
-      <p>Bot 1 🤖 | Bot 2 🤖 | Bot 3 🤖</p>
-      <p id="game-status">Esperando tu jugada...</p>
-    </section>
   </main>
 
-  <script src="./js/game.js"></script>
+  <script src="./js/chess.js"></script>
 </body>
 </html>
