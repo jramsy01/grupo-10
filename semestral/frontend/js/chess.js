@@ -830,14 +830,12 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedSquare = null;
     clearHighlights();
 
-    // Cambiar turno a la IA
+    // Cambiar turno a la IA y mover inmediatamente
     isWhiteTurn = false;
     updateGameStatus();
 
-    // Hacer que la IA mueva después de un breve delay
-    setTimeout(async () => {
-      await makeAIMove();
-    }, 500);
+    // IA mueve inmediatamente sin delay
+    makeAIMove();
   }
 
   // ===== FUNCIÓN PRINCIPAL PARA MOVIMIENTO DE LA IA =====
