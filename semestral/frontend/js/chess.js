@@ -16,192 +16,152 @@ document.addEventListener("DOMContentLoaded", () => {
   let gameOver = false;
   let aiThinking = false;
 
-  // ===== SISTEMA DE IA INTELIGENTE =====
+  // ===== SISTEMA DE IA OPTIMIZADA =====
   
   // Valores de las piezas para evaluación
   const pieceValues = {
-      "♙": 1, "♟": -1,    // Peones
-      "♖": 5, "♜": -5,    // Torres
-      "♘": 3, "♞": -3,    // Caballos
-      "♗": 3, "♝": -3,    // Alfiles
-      "♕": 9, "♛": -9,    // Damas
-      "♔": 1000, "♚": -1000 // Reyes
+      "♙": 1, "♟": -1,
+      "♖": 5, "♜": -5,
+      "♘": 3, "♞": -3,
+      "♗": 3, "♝": -3,
+      "♕": 9, "♛": -9,
+      "♔": 1000, "♚": -1000
   };
 
-  // Tablas de posición estratégica para cada pieza
-  const positionTables = {
-      pawn: [
-          [0,  0,  0,  0,  0,  0,  0,  0],
-          [50, 50, 50, 50, 50, 50, 50, 50],
-          [10, 10, 20, 30, 30, 20, 10, 10],
-          [5,  5, 10, 25, 25, 10,  5,  5],
-          [0,  0,  0, 20, 20,  0,  0,  0],
-          [5, -5,-10,  0,  0,-10, -5,  5],
-          [5, 10, 10,-20,-20, 10, 10,  5],
-          [0,  0,  0,  0,  0,  0,  0,  0]
-      ],
-      knight: [
-          [-50,-40,-30,-30,-30,-30,-40,-50],
-          [-40,-20,  0,  0,  0,  0,-20,-40],
-          [-30,  0, 10, 15, 15, 10,  0,-30],
-          [-30,  5, 15, 20, 20, 15,  5,-30],
-          [-30,  0, 15, 20, 20, 15,  0,-30],
-          [-30,  5, 10, 15, 15, 10,  5,-30],
-          [-40,-20,  0,  5,  5,  0,-20,-40],
-          [-50,-40,-30,-30,-30,-30,-40,-50]
-      ],
-      bishop: [
-          [-20,-10,-10,-10,-10,-10,-10,-20],
-          [-10,  0,  0,  0,  0,  0,  0,-10],
-          [-10,  0,  5, 10, 10,  5,  0,-10],
-          [-10,  5,  5, 10, 10,  5,  5,-10],
-          [-10,  0, 10, 10, 10, 10,  0,-10],
-          [-10, 10, 10, 10, 10, 10, 10,-10],
-          [-10,  5,  0,  0,  0,  0,  5,-10],
-          [-20,-10,-10,-10,-10,-10,-10,-20]
-      ],
-      rook: [
-          [0,  0,  0,  0,  0,  0,  0,  0],
-          [5, 10, 10, 10, 10, 10, 10,  5],
-          [-5, 0,  0,  0,  0,  0,  0, -5],
-          [-5, 0,  0,  0,  0,  0,  0, -5],
-          [-5, 0,  0,  0,  0,  0,  0, -5],
-          [-5, 0,  0,  0,  0,  0,  0, -5],
-          [-5, 0,  0,  0,  0,  0,  0, -5],
-          [0,  0,  0,  5,  5,  0,  0,  0]
-      ],
-      queen: [
-          [-20,-10,-10, -5, -5,-10,-10,-20],
-          [-10,  0,  0,  0,  0,  0,  0,-10],
-          [-10,  0,  5,  5,  5,  5,  0,-10],
-          [-5,   0,  5,  5,  5,  5,  0, -5],
-          [0,    0,  5,  5,  5,  5,  0, -5],
-          [-10,  5,  5,  5,  5,  5,  0,-10],
-          [-10,  0,  5,  0,  0,  0,  0,-10],
-          [-20,-10,-10, -5, -5,-10,-10,-20]
-      ],
-      king: [
-          [-30,-40,-40,-50,-50,-40,-40,-30],
-          [-30,-40,-40,-50,-50,-40,-40,-30],
-          [-30,-40,-40,-50,-50,-40,-40,-30],
-          [-30,-40,-40,-50,-50,-40,-40,-30],
-          [-20,-30,-30,-40,-40,-30,-30,-20],
-          [-10,-20,-20,-20,-20,-20,-20,-10],
-          [20, 20,  0,  0,  0,  0, 20, 20],
-          [20, 30, 10,  0,  0, 10, 30, 20]
-      ]
+  // Tablas de posición simplificadas
+  const positionBonus = {
+      pawn: {center: 20, advance: 10},
+      knight: {center: 15, edge: -20},
+      bishop: {diagonal: 10, center: 5},
+      rook: {openFile: 10, seventhRank: 15},
+      queen: {center: 5, active: 10},
+      king: {safety: 20, endgame: 10}
   };
 
-  // Sistema de razonamiento de la IA
-  class ChessAI {
+  // Sistema de IA rápida
+  class FastChessAI {
       constructor() {
-          this.maxDepth = 4;
-          this.transpositionTable = new Map();
+          this.maxDepth = 3; // Reducido de 4 a 3 para mayor velocidad
+          this.moveCache = new Map();
       }
 
-      // Función principal que elige el mejor movimiento
+      // Función principal optimizada
       async chooseBestMove() {
-          showAIThinking("🤖 Analizando posición...");
+          showAIThinking("🤖 Calculando...");
           
-          // Simular tiempo de pensamiento más realista
-          await this.delay(1000 + Math.random() * 2000);
+          // Delay mínimo solo para mostrar que está pensando
+          await this.delay(100);
           
-          const allMoves = this.getAllPossibleMoves(false); // false = negras
+          const allMoves = this.getAllPossibleMoves(false);
           
           if (allMoves.length === 0) {
               hideAIThinking();
               return null;
           }
 
-          showAIThinking("🧠 Evaluando " + allMoves.length + " movimientos posibles...");
-          await this.delay(500);
-
           let bestMove = null;
-          let bestScore = Infinity; // IA juega negras, busca score más bajo
-          let bestReasoning = "";
+          let bestScore = Infinity;
 
-          // Evaluar cada movimiento posible
-          for (let i = 0; i < allMoves.length; i++) {
-              const move = allMoves[i];
+          // Ordenar movimientos por prioridad (capturas primero)
+          const sortedMoves = this.prioritizeMoves(allMoves);
+
+          // Evaluar solo los mejores movimientos
+          const movesToEvaluate = Math.min(sortedMoves.length, 15);
+          
+          for (let i = 0; i < movesToEvaluate; i++) {
+              const move = sortedMoves[i];
               
-              showAIThinking(`🔍 Analizando movimiento ${i + 1}/${allMoves.length}: ${move.from} → ${move.to}`);
-              
-              // Hacer el movimiento temporalmente
               const originalPiece = this.makeTemporaryMove(move);
-              
-              // Evaluar la posición resultante
               const score = this.minimax(this.maxDepth - 1, -Infinity, Infinity, true);
-              const reasoning = this.analyzeMove(move, score);
-              
-              // Deshacer el movimiento
               this.undoTemporaryMove(move, originalPiece);
               
-              // Si este movimiento es mejor, guardarlo
               if (score < bestScore) {
                   bestScore = score;
                   bestMove = move;
-                  bestReasoning = reasoning;
               }
-              
-              await this.delay(200);
           }
 
-          showAIThinking(`✅ Mejor movimiento encontrado: ${bestMove.from} → ${bestMove.to}`);
-          showAIThinking(`💭 Razonamiento: ${bestReasoning}`);
-          
-          await this.delay(1500);
+          await this.delay(200); // Delay mínimo final
           hideAIThinking();
           
           return bestMove;
       }
 
-      // Algoritmo Minimax con poda Alpha-Beta
+      // Priorizar movimientos prometedores
+      prioritizeMoves(moves) {
+          return moves.sort((a, b) => {
+              const captureA = getPieceAt(a.to) ? 1 : 0;
+              const captureB = getPieceAt(b.to) ? 1 : 0;
+              
+              // Priorizar capturas
+              if (captureA !== captureB) return captureB - captureA;
+              
+              // Priorizar movimientos al centro
+              const centerA = this.isCenterSquare(a.to) ? 1 : 0;
+              const centerB = this.isCenterSquare(b.to) ? 1 : 0;
+              
+              return centerB - centerA;
+          });
+      }
+
+      // Verificar si es casilla central
+      isCenterSquare(pos) {
+          const col = pos.charCodeAt(0) - 97;
+          const row = parseInt(pos[1]);
+          return col >= 3 && col <= 4 && row >= 3 && row <= 6;
+      }
+
+      // Minimax optimizado
       minimax(depth, alpha, beta, isMaximizing) {
           if (depth === 0) {
-              return this.evaluatePosition();
+              return this.quickEvaluate();
           }
 
           const moves = this.getAllPossibleMoves(isMaximizing);
           
           if (moves.length === 0) {
-              // Jaque mate o ahogado
               return isMaximizing ? -10000 : 10000;
           }
 
+          // Solo evaluar los primeros movimientos en niveles profundos
+          const movesToCheck = depth > 1 ? Math.min(moves.length, 10) : moves.length;
+
           if (isMaximizing) {
-              let maxEvaluation = -Infinity;
-              for (const move of moves) {
+              let maxEval = -Infinity;
+              for (let i = 0; i < movesToCheck; i++) {
+                  const move = moves[i];
                   const originalPiece = this.makeTemporaryMove(move);
-                  const evaluation = this.minimax(depth - 1, alpha, beta, false);
+                  const evaluacion = this.minimax(depth - 1, alpha, beta, false);
                   this.undoTemporaryMove(move, originalPiece);
                   
-                  maxEvaluation = Math.max(maxEvaluation, evaluation);
-                  alpha = Math.max(alpha, evaluation);
+                  maxEval = Math.max(maxEval, evaluacion);
+                  alpha = Math.max(alpha, evaluacion);
                   
-                  if (beta <= alpha) break; // Poda Alpha-Beta
+                  if (beta <= alpha) break;
               }
-              return maxEvaluation;
+              return maxEval;
           } else {
-              let minEvaluation = Infinity;
-              for (const move of moves) {
+              let minEval = Infinity;
+              for (let i = 0; i < movesToCheck; i++) {
+                  const move = moves[i];
                   const originalPiece = this.makeTemporaryMove(move);
-                  const evaluation = this.minimax(depth - 1, alpha, beta, true);
+                  const evaluacion = this.minimax(depth - 1, alpha, beta, true);
                   this.undoTemporaryMove(move, originalPiece);
                   
-                  minEvaluation = Math.min(minEvaluation, evaluation);
-                  beta = Math.min(beta, evaluation);
+                  minEval = Math.min(minEval, evaluacion);
+                  beta = Math.min(beta, eval);
                   
-                  if (beta <= alpha) break; // Poda Alpha-Beta
+                  if (beta <= alpha) break;
               }
-              return minEvaluation;
+              return minEval;
           }
       }
 
-      // Evalúa la posición actual del tablero
-      evaluatePosition() {
+      // Evaluación rápida de posición
+      quickEvaluate() {
           let score = 0;
           
-          // Evaluar material y posición
+          // Solo evaluar material y posición básica
           for (let row = 8; row >= 1; row--) {
               for (let col = 0; col < 8; col++) {
                   const pos = letters[col] + row;
@@ -211,229 +171,18 @@ document.addEventListener("DOMContentLoaded", () => {
                       // Valor material
                       score += pieceValues[piece] || 0;
                       
-                      // Valor posicional
-                      score += this.getPositionalValue(piece, col, 8 - row);
-                  }
-              }
-          }
-
-          // Bonificaciones estratégicas adicionales
-          score += this.evaluateKingSafety();
-          score += this.evaluatePawnStructure();
-          score += this.evaluatePieceActivity();
-          
-          return score;
-      }
-
-      // Obtiene valor posicional de una pieza
-      getPositionalValue(piece, col, row) {
-          const pieceType = this.getPieceType(piece);
-          const isWhite = isPieceWhite(piece);
-          
-          if (!positionTables[pieceType]) return 0;
-          
-          const table = positionTables[pieceType];
-          const value = table[row] ? table[row][col] : 0;
-          
-          return isWhite ? value : -value;
-      }
-
-      // Determina el tipo de pieza
-      getPieceType(piece) {
-          const types = {
-              "♙": "pawn", "♟": "pawn",
-              "♖": "rook", "♜": "rook",
-              "♘": "knight", "♞": "knight",
-              "♗": "bishop", "♝": "bishop",
-              "♕": "queen", "♛": "queen",
-              "♔": "king", "♚": "king"
-          };
-          return types[piece] || "pawn";
-      }
-
-      // Evalúa la seguridad del rey
-      evaluateKingSafety() {
-          let score = 0;
-          
-          // Buscar reyes
-          const whiteKing = this.findKing(true);
-          const blackKing = this.findKing(false);
-          
-          if (whiteKing) {
-              score += this.calculateKingSafety(whiteKing, true);
-          }
-          
-          if (blackKing) {
-              score -= this.calculateKingSafety(blackKing, false);
-          }
-          
-          return score;
-      }
-
-      // Evalúa estructura de peones
-      evaluatePawnStructure() {
-          let score = 0;
-          
-          for (let col = 0; col < 8; col++) {
-              const whitePawns = [];
-              const blackPawns = [];
-              
-              for (let row = 1; row <= 8; row++) {
-                  const piece = getPieceAt(letters[col] + row);
-                  if (piece === "♙") whitePawns.push(row);
-                  if (piece === "♟") blackPawns.push(row);
-              }
-              
-              // Penalizar peones doblados
-              if (whitePawns.length > 1) score -= 10;
-              if (blackPawns.length > 1) score += 10;
-              
-              // Recompensar peones pasados
-              if (whitePawns.length === 1 && blackPawns.length === 0) {
-                  score += 20;
-              }
-              if (blackPawns.length === 1 && whitePawns.length === 0) {
-                  score -= 20;
-              }
-          }
-          
-          return score;
-      }
-
-      // Evalúa actividad de las piezas
-      evaluatePieceActivity() {
-          let score = 0;
-          
-          // Contar movimientos posibles para cada bando
-          const whiteMoves = this.getAllPossibleMoves(true).length;
-          const blackMoves = this.getAllPossibleMoves(false).length;
-          
-          // Más movilidad = mejor posición
-          score += (whiteMoves - blackMoves) * 0.5;
-          
-          return score;
-      }
-
-      // Analiza un movimiento específico y genera razonamiento
-      analyzeMove(move, score) {
-          const piece = getPieceAt(move.from);
-          const capturedPiece = getPieceAt(move.to);
-          
-          let reasoning = [];
-          
-          // Análisis de captura
-          if (capturedPiece) {
-              const captureValue = Math.abs(pieceValues[capturedPiece] || 0);
-              reasoning.push(`Captura ${this.getPieceName(capturedPiece)} (+${captureValue} puntos)`);
-          }
-          
-          // Análisis de amenazas
-          if (this.createsThreat(move)) {
-              reasoning.push("Crea amenaza directa");
-          }
-          
-          // Análisis de defensa
-          if (this.improvesDefense(move)) {
-              reasoning.push("Mejora defensa");
-          }
-          
-          // Análisis posicional
-          if (score < -50) {
-              reasoning.push("Excelente posición");
-          } else if (score < 0) {
-              reasoning.push("Posición favorable");
-          } else if (score > 50) {
-              reasoning.push("Posición complicada");
-          }
-          
-          return reasoning.length > 0 ? reasoning.join(", ") : "Movimiento sólido";
-      }
-
-      // Métodos auxiliares
-      findKing(isWhite) {
-          const kingPiece = isWhite ? "♔" : "♚";
-          for (let row = 1; row <= 8; row++) {
-              for (let col = 0; col < 8; col++) {
-                  const pos = letters[col] + row;
-                  if (getPieceAt(pos) === kingPiece) {
-                      return pos;
-                  }
-              }
-          }
-          return null;
-      }
-
-      calculateKingSafety(kingPos, isWhite) {
-          // Implementación simplificada de seguridad del rey
-          const surroundingSquares = this.getSurroundingSquares(kingPos);
-          let safety = 0;
-          
-          surroundingSquares.forEach(pos => {
-              const piece = getPieceAt(pos);
-              if (piece && isPieceWhite(piece) === isWhite) {
-                  safety += 5; // Piezas propias cerca del rey dan seguridad
-              }
-          });
-          
-          return safety;
-      }
-
-      getSurroundingSquares(pos) {
-          const col = pos.charCodeAt(0);
-          const row = parseInt(pos[1]);
-          const squares = [];
-          
-          for (let dr = -1; dr <= 1; dr++) {
-              for (let dc = -1; dc <= 1; dc++) {
-                  if (dr === 0 && dc === 0) continue;
-                  
-                  const newRow = row + dr;
-                  const newCol = col + dc;
-                  
-                  if (newRow >= 1 && newRow <= 8 && newCol >= 97 && newCol <= 104) {
-                      squares.push(String.fromCharCode(newCol) + newRow);
+                      // Bonus simple por posición
+                      if (this.isCenterSquare(pos)) {
+                          score += isPieceWhite(piece) ? 5 : -5;
+                      }
                   }
               }
           }
           
-          return squares;
+          return score;
       }
 
-      createsThreat(move) {
-          // Verificar si el movimiento crea una amenaza
-          const originalPiece = this.makeTemporaryMove(move);
-          const enemyKing = this.findKing(true); // Rey blanco
-          
-          if (enemyKing) {
-              const moves = getPossibleMoves(document.querySelector(`[data-position="${move.to}"]`));
-              const threatens = moves.includes(enemyKing);
-              this.undoTemporaryMove(move, originalPiece);
-              return threatens;
-          }
-          
-          this.undoTemporaryMove(move, originalPiece);
-          return false;
-      }
-
-      improvesDefense(move) {
-          // Lógica simplificada para detectar si mejora la defensa
-          const piece = getPieceAt(move.from);
-          return piece === "♚" || piece === "♜"; // Rey o torre moviéndose puede mejorar defensa
-      }
-
-      getPieceName(piece) {
-          const names = {
-              "♙": "peón", "♟": "peón",
-              "♖": "torre", "♜": "torre",
-              "♘": "caballo", "♞": "caballo",
-              "♗": "alfil", "♝": "alfil",
-              "♕": "dama", "♛": "dama",
-              "♔": "rey", "♚": "rey"
-          };
-          return names[piece] || "pieza";
-      }
-
-      // Obtener todos los movimientos posibles para un bando
+      // Obtener todos los movimientos posibles
       getAllPossibleMoves(isWhite) {
           const moves = [];
           
@@ -459,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return moves;
       }
 
-      // Hacer movimiento temporal para evaluación
+      // Hacer movimiento temporal
       makeTemporaryMove(move) {
           const fromSquare = document.querySelector(`[data-position="${move.from}"]`);
           const toSquare = document.querySelector(`[data-position="${move.to}"]`);
@@ -480,16 +229,16 @@ document.addEventListener("DOMContentLoaded", () => {
           toSquare.textContent = originalPiece;
       }
 
-      // Método de delay para simular pensamiento
+      // Delay mínimo
       delay(ms) {
           return new Promise(resolve => setTimeout(resolve, ms));
       }
   }
 
-  // Instancia de la IA
-  const chessAI = new ChessAI();
+  // Instancia de la IA rápida
+  const chessAI = new FastChessAI();
 
-  // ===== FUNCIONES DE INTERFAZ PARA LA IA =====
+  // ===== FUNCIONES DE INTERFAZ =====
   
   function showAIThinking(message) {
       const status = document.getElementById("game-status");
@@ -510,12 +259,12 @@ document.addEventListener("DOMContentLoaded", () => {
               status.style.color = "#4caf50";
           } else {
               status.innerHTML = isWhiteTurn ? "⚪ Tu turno (Blancas)" : "⚫ Turno de la IA (Negras)";
-              status.style.color = isWhiteTurn ? "#f0f0f0" : "#333";
+              status.style.color = "#f0f0f0";
           }
       }
   }
 
-  // ===== CÓDIGO ORIGINAL CON MODIFICACIONES PARA IA =====
+  // ===== CREAR TABLERO =====
   
   for (let row = 8; row >= 1; row--) {
     for (let col = 0; col < 8; col++) {
@@ -702,7 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Rey (sin enroque)
+    // Rey
     else if (piece === "♔" || piece === "♚") {
       const directions = [
         [1, 0], [-1, 0], [0, 1], [0, -1],
@@ -730,7 +479,6 @@ document.addEventListener("DOMContentLoaded", () => {
       span.textContent = capturedPiece;
       span.classList.add("captured-icon");
 
-      // Detectar si es ficha blanca o negra según el ícono
       const whitePieces = ["♔", "♕", "♖", "♗", "♘", "♙"];
       const blackPieces = ["♚", "♛", "♜", "♝", "♞", "♟"];
 
@@ -744,21 +492,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ===== FUNCIÓN PRINCIPAL PARA MANEJAR CLICS =====
+  // ===== MANEJO DE CLICS =====
   async function handleSquareClick(square) {
     const piece = square.textContent;
     if (gameOver || aiThinking) return;
 
-    // Solo permitir movimientos durante el turno del jugador (blancas)
     if (!isWhiteTurn) {
-      showAIThinking("🤖 Espera, es mi turno...");
-      setTimeout(hideAIThinking, 1000);
       return;
     }
 
-    // Si no hay pieza seleccionada aún
     if (!selectedSquare) {
-      // Solo permitir seleccionar piezas blancas en el turno del jugador
       if (piece && isPieceWhite(piece)) {
         selectedSquare = square;
         square.classList.add("selected-square");
@@ -769,45 +512,31 @@ document.addEventListener("DOMContentLoaded", () => {
           const sq = document.querySelector(`.square[data-position="${pos}"]`);
           if (sq) sq.classList.add("highlight-move");
         });
-      } else {
-        const status = document.getElementById("game-status");
-        const originalText = status.innerHTML;
-        status.innerHTML = "❌ Solo puedes mover tus piezas (blancas)";
-        status.style.color = "#ff5722";
-        setTimeout(() => {
-          status.innerHTML = originalText;
-          status.style.color = "#f0f0f0";
-        }, 1500);
       }
     } else {
-      // Si se vuelve a hacer clic en la misma pieza, cancelar selección
       if (square === selectedSquare) {
         selectedSquare.classList.remove("selected-square");
         selectedSquare = null;
         clearHighlights();
       } else {
-        // Solo permitir movimiento si está resaltado como movimiento válido
         if (!square.classList.contains("highlight-move")) return;
 
-        // Hacer el movimiento del jugador
         await makePlayerMove(selectedSquare, square);
       }
     }
   }
 
-  // ===== FUNCIÓN PARA EJECUTAR MOVIMIENTO DEL JUGADOR =====
+  // ===== MOVIMIENTO DEL JUGADOR =====
   async function makePlayerMove(fromSquare, toSquare) {
     const capturedPiece = toSquare.textContent;
 
     if (capturedPiece) {
-      capturePiece(capturedPiece, true); // Jugador captura
+      capturePiece(capturedPiece, true);
     }
 
-    // Realizar el movimiento
     toSquare.textContent = fromSquare.textContent;
     fromSquare.textContent = "";
 
-    // Verificar si se capturó al rey negro (victoria del jugador)
     if (capturedPiece === "♚") {
       gameOver = true;
       const status = document.getElementById("game-status");
@@ -818,27 +547,24 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Mover las clases de color
     toSquare.classList.remove("white-piece", "black-piece");
     if (fromSquare.classList.contains("white-piece")) {
       toSquare.classList.add("white-piece");
     }
     fromSquare.classList.remove("white-piece", "black-piece");
 
-    // Limpiar selección
     fromSquare.classList.remove("selected-square");
     selectedSquare = null;
     clearHighlights();
 
-    // Cambiar turno a la IA y mover inmediatamente
     isWhiteTurn = false;
     updateGameStatus();
 
-    // IA mueve inmediatamente sin delay
-    makeAIMove();
+    // IA mueve inmediatamente
+    setTimeout(() => makeAIMove(), 50);
   }
 
-  // ===== FUNCIÓN PRINCIPAL PARA MOVIMIENTO DE LA IA =====
+  // ===== MOVIMIENTO DE LA IA =====
   async function makeAIMove() {
     if (gameOver || isWhiteTurn) return;
 
@@ -846,7 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const bestMove = await chessAI.chooseBestMove();
       
       if (!bestMove) {
-        // IA no tiene movimientos (jaque mate o ahogado)
         gameOver = true;
         const status = document.getElementById("game-status");
         status.innerHTML = "🏆 ¡Has ganado! La IA no tiene movimientos válidos";
@@ -856,17 +581,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Ejecutar el movimiento de la IA
       const fromSquare = document.querySelector(`[data-position="${bestMove.from}"]`);
       const toSquare = document.querySelector(`[data-position="${bestMove.to}"]`);
       
       if (!fromSquare || !toSquare) return;
 
-      // Animación visual del movimiento de la IA
+      // Animación breve
       fromSquare.classList.add("ai-thinking");
       toSquare.classList.add("ai-thinking");
       
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       fromSquare.classList.remove("ai-thinking");
       toSquare.classList.remove("ai-thinking");
@@ -874,14 +598,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const capturedPiece = toSquare.textContent;
 
       if (capturedPiece) {
-        capturePiece(capturedPiece, false); // IA captura
+        capturePiece(capturedPiece, false);
       }
 
-      // Realizar el movimiento
       toSquare.textContent = fromSquare.textContent;
       fromSquare.textContent = "";
 
-      // Verificar si la IA capturó al rey blanco (victoria de la IA)
       if (capturedPiece === "♔") {
         gameOver = true;
         const status = document.getElementById("game-status");
@@ -892,18 +614,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Mover las clases de color
       toSquare.classList.remove("white-piece", "black-piece");
       if (fromSquare.classList.contains("black-piece")) {
         toSquare.classList.add("black-piece");
       }
       fromSquare.classList.remove("white-piece", "black-piece");
 
-      // Cambiar turno de vuelta al jugador
       isWhiteTurn = true;
       updateGameStatus();
 
-      // Verificar si el jugador tiene movimientos válidos
       const playerMoves = chessAI.getAllPossibleMoves(true);
       if (playerMoves.length === 0) {
         gameOver = true;
@@ -917,10 +636,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error en movimiento de IA:", error);
       hideAIThinking();
-      const status = document.getElementById("game-status");
-      status.innerHTML = "❌ Error en la IA. Tu turno continúa.";
-      status.style.color = "#ff5722";
       isWhiteTurn = true;
+      updateGameStatus();
     }
   }
 
@@ -946,54 +663,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (restartBtn) {
     restartBtn.addEventListener("click", () => {
-      location.reload(); // Recarga la página para reiniciar todo
+      location.reload();
     });
   }
 
-  // ===== ESTILOS CSS ADICIONALES PARA LA IA =====
-  const style = document.createElement('style');
-  style.textContent = `
-      .ai-thinking {
-          background-color: #ff9800 !important;
-          animation: aiPulse 0.8s infinite;
-      }
-      
-      @keyframes aiPulse {
-          0%, 100% { 
-              opacity: 1; 
-              transform: scale(1);
-          }
-          50% { 
-              opacity: 0.7; 
-              transform: scale(1.05);
-          }
-      }
-      
-      .selected-square {
-          background-color: #ffeb3b !important;
-          box-shadow: inset 0 0 20px rgba(255,193,7,0.8);
-      }
-      
-      .highlight-move {
-          background-color: #4caf50 !important;
-          box-shadow: inset 0 0 15px rgba(76,175,80,0.7);
-      }
-      
-      #game-status {
-          transition: all 0.3s ease;
-      }
-      
-      .captured-icon {
-          display: inline-block;
-          margin: 2px;
-          padding: 2px;
-          font-size: 18px;
-          border-radius: 3px;
-          background: rgba(255,255,255,0.1);
-      }
-  `;
-  document.head.appendChild(style);
-
-  console.log("🤖 IA de Ajedrez Inteligente cargada correctamente");
-  console.log("💡 La IA usará razonamiento estratégico para elegir los mejores movimientos");
+  console.log("🤖 IA de Ajedrez Rápida cargada");
+  console.log("⚡ Optimizada para respuestas instantáneas");
 });
